@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Milk Tracker">
+<title>Milk Tracker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Baloo+2:wght@400;600;700&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#f0f7ff;
+  --card:#ffffff;
+  --blue:#2563eb;
+  --blue-light:#dbeafe;
+  --blue-mid:#93c5fd;
+  --green:#16a34a;
+  --green-light:#dcfce7;
+  --red:#dc2626;
+  --red-light:#fee2e2;
+  --yellow:#d97706;
+  --yellow-light:#fef3c7;
+  --text:#1e293b;
+  --muted:#64748b;
+  --border:#e2e8f0;
+  --shadow:0 2px 12px rgba(37,99,235,0.08);
+}
+
+body{
+  background:var(--bg);
+  font-family:'Nunito',sans-serif;
+  color:var(--text);
+  min-height:100vh;
+  padding:16px 12px 80px;
+  background-image:
+    radial-gradient(circle at 20% 0%,rgba(37,99,235,0.07) 0%,transparent 50%),
+    radial-gradient(circle at 80% 100%,rgba(22,163,74,0.06) 0%,transparent 50%);
+}
+
+h1.app-title{
+  font-family:'Baloo 2',cursive;
+  font-size:clamp(20px,5vw,28px);
+  color:var(--blue);
+  font-weight:700;
+  display:flex;align-items:center;gap:10px;
+}
+.app-subtitle{font-size:12px;color:var(--muted);margin-top:2px;}
+
+.settings-card{
+  background:var(--card);
+  border-radius:16px;
+  padding:16px;
+  box-shadow:var(--shadow);
+  margin-bottom:16px;
+  border:1px solid var(--border);
+}
+.settings-title{font-weight:700;font-size:14px;margin-bottom:12px;color:var(--blue);display:flex;align-items:center;gap:6px;}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;}
+.field input,.field select{
+  width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;
+  font-family:'Nunito',sans-serif;font-size:14px;color:var(--text);
+  background:var(--bg);outline:none;transition:border-color 0.2s;
+}
+.field input:focus,.field select:focus{border-color:var(--blue);}
+.field.full{grid-column:1/-1;}
+
+.month-nav{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--card);border-radius:16px;padding:12px 16px;
+  box-shadow:var(--shadow);margin-bottom:16px;border:1px solid var(--border);
+}
+.month-nav button{
+  background:var(--blue-light);border:none;border-radius:8px;
+  padding:8px 18px;font-size:20px;cursor:pointer;color:var(--blue);
+  transition:background 0.15s;
+}
+.month-nav button:hover{background:var(--blue-mid);}
+.month-title{font-family:'Baloo 2',cursive;font-size:18px;font-weight:700;color:var(--text);}
+
+.summary-strip{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
+  margin-bottom:16px;
+}
+.summary-box{
+  background:var(--card);border-radius:14px;padding:14px 10px;
+  box-shadow:var(--shadow);border:1px solid var(--border);text-align:center;
+}
+.summary-box .s-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
+.summary-box .s-val{font-family:'Baloo 2',cursive;font-size:20px;font-weight:700;color:var(--blue);}
+.summary-box .s-unit{font-size:11px;color:var(--muted);margin-top:2px;}
+.summary-box.green .s-val{color:var(--green);}
+.summary-box.yellow .s-val{color:var(--yellow);}
+
+.cal-card{
+  background:var(--card);border-radius:16px;
+  box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;
+  margin-bottom:16px;
+}
+.cal-weekdays{
+  display:grid;grid-template-columns:repeat(7,1fr);
+  background:var(--blue);
+}
+.cal-weekdays span{
+  text-align:center;padding:8px 2px;font-size:11px;font-weight:700;
+  color:white;letter-spacing:0.03em;
+}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);}
+
+.cal-day{
+  border:1px solid var(--border);
+  min-height:70px;padding:5px 3px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  cursor:pointer;transition:background 0.15s;
+}
+.cal-day:hover{background:var(--blue-light);}
+.cal-day.empty{background:#fafafa;cursor:default;}
+.cal-day.empty:hover{background:#fafafa;}
+.cal-day.today{background:var(--blue-light);}
+.cal-day.today .day-num{background:var(--blue);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
+
+.day-num{font-size:12px;font-weight:700;color:var(--text);}
+
+.milk-badge{
+  font-size:9px;font-weight:700;padding:2px 5px;border-radius:20px;
+  width:100%;text-align:center;
+}
+.milk-badge.delivered{background:var(--green-light);color:var(--green);}
+.milk-badge.not-delivered{background:var(--red-light);color:var(--red);}
+.milk-badge.pending{background:var(--yellow-light);color:var(--yellow);}
+
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.45);
+  display:flex;align-items:center;justify-content:center;z-index:100;
+  padding:16px;backdrop-filter:blur(3px);
+}
+.modal-overlay.hidden{display:none;}
+.modal{
+  background:var(--card);border-radius:20px;padding:24px;
+  width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.2);
+  animation:popIn 0.2s ease;
+}
+@keyframes popIn{from{transform:scale(0.92);opacity:0}to{transform:scale(1);opacity:1}}
+.modal h2{font-family:'Baloo 2',cursive;font-size:20px;color:var(--blue);margin-bottom:4px;}
+.modal .modal-date{font-size:13px;color:var(--muted);margin-bottom:18px;}
+
+.toggle-row{display:flex;gap:10px;margin-bottom:16px;}
+.toggle-btn{
+  flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);
+  font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;
+  background:white;transition:all 0.15s;
+}
+.toggle-btn.active-delivered{border-color:var(--green);background:var(--green-light);color:var(--green);}
+.toggle-btn.active-not{border-color:var(--red);background:var(--red-light);color:var(--red);}
+
+.qty-input-row{margin-bottom:16px;}
+.qty-input-row label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px;}
+.qty-input-row input{
+  width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;
+  font-size:18px;font-weight:700;text-align:center;font-family:'Nunito',sans-serif;
+  outline:none;transition:border-color 0.2s;
+}
+.qty-input-row input:focus{border-color:var(--blue);}
+.qty-note{font-size:11px;color:var(--muted);margin-top:4px;text-align:center;}
+
+.modal-actions{display:flex;gap:10px;}
+.btn-save{
+  flex:1;padding:12px;background:var(--blue);color:white;border:none;
+  border-radius:10px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;transition:background 0.15s;
+}
+.btn-save:hover{background:#1d4ed8;}
+.btn-cancel{
+  padding:12px 18px;background:var(--bg);color:var(--muted);border:1.5px solid var(--border);
+  border-radius:10px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:600;
+  cursor:pointer;
+}
+
+.bill-card{
+  background:var(--card);border-radius:16px;padding:18px;
+  box-shadow:var(--shadow);border:1px solid var(--border);
+  margin-bottom:16px;
+}
+.bill-title{font-weight:700;font-size:14px;margin-bottom:14px;color:var(--text);display:flex;align-items:center;gap:6px;}
+.bill-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:9px 0;border-bottom:1px dashed var(--border);font-size:13px;
+}
+.bill-row:last-child{border-bottom:none;}
+.bill-row.total{
+  font-size:17px;font-weight:800;color:var(--blue);
+  border-top:2px solid var(--blue);margin-top:8px;padding-top:12px;
+}
+.bill-label{color:var(--muted);}
+.bill-val{font-weight:700;}
+
+.print-btn{
+  width:100%;margin-top:14px;padding:13px;background:var(--green);color:white;
+  border:none;border-radius:10px;font-family:'Nunito',sans-serif;font-size:15px;
+  font-weight:700;cursor:pointer;transition:background 0.15s;display:flex;
+  align-items:center;justify-content:center;gap:8px;
+}
+.print-btn:hover{background:#15803d;}
+
+/* Tab bar for mobile feel */
+.tab-bar{
+  position:fixed;bottom:0;left:0;right:0;
+  background:white;border-top:1px solid var(--border);
+  display:flex;z-index:50;
+  box-shadow:0 -4px 20px rgba(0,0,0,0.08);
+}
+.tab-btn{
+  flex:1;padding:10px 4px 12px;border:none;background:transparent;
+  font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;
+  color:var(--muted);cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;gap:3px;transition:color 0.15s;
+}
+.tab-btn .tab-icon{font-size:20px;}
+.tab-btn.active{color:var(--blue);}
+
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+</style>
+</head>
+<body>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+  <div>
+    <h1 class="app-title">🥛 Milk Tracker</h1>
+    <div class="app-subtitle">Daily delivery & monthly bill tracker</div>
+  </div>
+</div>
+
+<!-- Tab: Calendar -->
+<div class="tab-content active" id="tab-calendar">
+
+  <!-- Month Nav -->
+  <div class="month-nav">
+    <button onclick="changeMonth(-1)">‹</button>
+    <div class="month-title" id="monthTitle"></div>
+    <button onclick="changeMonth(1)">›</button>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-strip">
+    <div class="summary-box green">
+      <div class="s-label">Delivered</div>
+      <div class="s-val" id="daysDelivered">0</div>
+      <div class="s-unit">days</div>
+    </div>
+    <div class="summary-box">
+      <div class="s-label">Not Delivered</div>
+      <div class="s-val" style="color:var(--red)" id="daysNotDelivered">0</div>
+      <div class="s-unit">days</div>
+    </div>
+    <div class="summary-box">
+      <div class="s-label">Total Litres</div>
+      <div class="s-val" id="totalLitres">0</div>
+      <div class="s-unit">litres</div>
+    </div>
+    <div class="summary-box yellow">
+      <div class="s-label">Amount Due</div>
+      <div class="s-val" id="amountDue">₹0</div>
+      <div class="s-unit">this month</div>
+    </div>
+  </div>
+
+  <!-- Calendar -->
+  <div class="cal-card">
+    <div class="cal-weekdays">
+      <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+
+</div>
+
+<!-- Tab: Bill -->
+<div class="tab-content" id="tab-bill">
+  <div class="bill-card">
+    <div class="bill-title">🧾 Monthly Bill — <span id="billMonthLabel"></span></div>
+    <div class="bill-row"><span class="bill-label">Milk Category</span><span class="bill-val" id="billCategory">—</span></div>
+    <div class="bill-row"><span class="bill-label">Milkman</span><span class="bill-val" id="billMilkman">—</span></div>
+    <div class="bill-row"><span class="bill-label">Price per Litre</span><span class="bill-val" id="billPrice">—</span></div>
+    <div class="bill-row"><span class="bill-label">Days Delivered</span><span class="bill-val" id="billDays">—</span></div>
+    <div class="bill-row"><span class="bill-label">Days Not Delivered</span><span class="bill-val" id="billNotDays">—</span></div>
+    <div class="bill-row"><span class="bill-label">Total Litres</span><span class="bill-val" id="billLitres">—</span></div>
+    <div class="bill-row total"><span>Total Amount to Pay</span><span id="billTotal">₹0</span></div>
+    <button class="print-btn" onclick="printBill()">🖨️ Print / Save Bill</button>
+  </div>
+</div>
+
+<!-- Tab: Settings -->
+<div class="tab-content" id="tab-settings">
+  <div class="settings-card">
+    <div class="settings-title">⚙️ Settings</div>
+    <div class="settings-grid">
+      <div class="field full">
+        <label>Milk Category</label>
+        <select id="milkCategory" onchange="saveSettings();renderAll()">
+          <option>Full Cream Milk</option>
+          <option>Toned Milk</option>
+          <option>Double Toned Milk</option>
+          <option>Buffalo Milk</option>
+          <option>Cow Milk</option>
+          <option>Skimmed Milk</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Price / Litre (₹)</label>
+        <input type="number" id="pricePerLitre" value="60" min="1" step="0.5" oninput="saveSettings();renderAll()">
+      </div>
+      <div class="field">
+        <label>Default Qty (L/day)</label>
+        <input type="number" id="defaultQty" value="1" min="0.5" step="0.5" oninput="saveSettings();renderAll()">
+      </div>
+      <div class="field full">
+        <label>Milkman Name</label>
+        <input type="text" id="milkmanName" placeholder="e.g. Ramesh" oninput="saveSettings();renderAll()">
+      </div>
+      <div class="field full">
+        <label>Your Name</label>
+        <input type="text" id="ownerName" placeholder="e.g. Sharma Family" oninput="saveSettings();renderAll()">
+      </div>
+    </div>
+  </div>
+  <div style="text-align:center;padding:20px;font-size:12px;color:var(--muted);">
+    🥛 Milk Tracker App &nbsp;•&nbsp; All data saved on your phone
+  </div>
+</div>
+
+<!-- Tab Bar -->
+<div class="tab-bar">
+  <button class="tab-btn active" id="tabBtn-calendar" onclick="switchTab('calendar')">
+    <span class="tab-icon">📅</span>Calendar
+  </button>
+  <button class="tab-btn" id="tabBtn-bill" onclick="switchTab('bill')">
+    <span class="tab-icon">🧾</span>Bill
+  </button>
+  <button class="tab-btn" id="tabBtn-settings" onclick="switchTab('settings')">
+    <span class="tab-icon">⚙️</span>Settings
+  </button>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay hidden" id="modalOverlay">
+  <div class="modal">
+    <h2>Mark Delivery</h2>
+    <div class="modal-date" id="modalDateLabel"></div>
+    <div class="toggle-row">
+      <button class="toggle-btn" id="btnDelivered" onclick="setStatus('delivered')">✅ Delivered</button>
+      <button class="toggle-btn" id="btnNotDelivered" onclick="setStatus('not-delivered')">❌ Not Delivered</button>
+    </div>
+    <div class="qty-input-row" id="qtyRow">
+      <label>Quantity Delivered (Litres)</label>
+      <input type="number" id="modalQty" min="0.5" step="0.5" value="1">
+      <div class="qty-note">Change if milkman gave more or less today</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveDay()">Save ✓</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentYear = new Date().getFullYear();
+  let currentMonth = new Date().getMonth();
+  let selectedDay = null;
+  let modalStatus = 'delivered';
+  const STORAGE_KEY = 'milk_tracker_v3';
+  const SETTINGS_KEY = 'milk_tracker_settings';
+  const today = new Date();
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  // Tab switching
+  function switchTab(name){
+    document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+    document.getElementById('tab-'+name).classList.add('active');
+    document.getElementById('tabBtn-'+name).classList.add('active');
+    if(name==='bill') renderBill();
+  }
+
+  // Settings persistence
+  function saveSettings(){
+    const s={
+      category: document.getElementById('milkCategory').value,
+      price: document.getElementById('pricePerLitre').value,
+      qty: document.getElementById('defaultQty').value,
+      milkman: document.getElementById('milkmanName').value,
+      owner: document.getElementById('ownerName').value
+    };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+  }
+
+  function loadSettings(){
+    try{
+      const s = JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}');
+      if(s.category) document.getElementById('milkCategory').value=s.category;
+      if(s.price) document.getElementById('pricePerLitre').value=s.price;
+      if(s.qty) document.getElementById('defaultQty').value=s.qty;
+      if(s.milkman) document.getElementById('milkmanName').value=s.milkman;
+      if(s.owner) document.getElementById('ownerName').value=s.owner;
+    }catch(e){}
+  }
+
+  function getKey(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+  function getData(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); }catch(e){ return {}; } }
+  function saveData(d){ localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+  function getDayData(y,m,d){ const data=getData(); return data[getKey(y,m,d)]||null; }
+  function setDayData(y,m,d,val){ const data=getData(); data[getKey(y,m,d)]=val; saveData(data); }
+  function getDefaultQty(){ return parseFloat(document.getElementById('defaultQty').value)||1; }
+  function getPrice(){ return parseFloat(document.getElementById('pricePerLitre').value)||60; }
+
+  function changeMonth(dir){
+    currentMonth+=dir;
+    if(currentMonth>11){currentMonth=0;currentYear++;}
+    if(currentMonth<0){currentMonth=11;currentYear--;}
+    renderAll();
+  }
+
+  function getMonthStats(){
+    const daysInMonth = new Date(currentYear, currentMonth+1, 0).getDate();
+    let delivered=0, notDelivered=0, totalLitres=0;
+    for(let d=1;d<=daysInMonth;d++){
+      const dayData=getDayData(currentYear,currentMonth,d);
+      if(dayData){
+        if(dayData.status==='delivered'){delivered++;totalLitres+=dayData.qty;}
+        else notDelivered++;
+      }
+    }
+    return {delivered, notDelivered, totalLitres, amount: Math.round(totalLitres*getPrice())};
+  }
+
+  function renderAll(){
+    document.getElementById('monthTitle').textContent=`${MONTHS[currentMonth]} ${currentYear}`;
+    const daysInMonth=new Date(currentYear,currentMonth+1,0).getDate();
+    const firstDay=new Date(currentYear,currentMonth,1).getDay();
+    const grid=document.getElementById('calGrid');
+    grid.innerHTML='';
+
+    for(let i=0;i<firstDay;i++){
+      const el=document.createElement('div');
+      el.className='cal-day empty';
+      grid.appendChild(el);
+    }
+
+    for(let d=1;d<=daysInMonth;d++){
+      const el=document.createElement('div');
+      el.className='cal-day';
+      const isToday=d===today.getDate()&&currentMonth===today.getMonth()&&currentYear===today.getFullYear();
+      if(isToday) el.classList.add('today');
+      const dayData=getDayData(currentYear,currentMonth,d);
+      const isFuture=new Date(currentYear,currentMonth,d)>today;
+      const numDiv=document.createElement('div');
+      numDiv.className='day-num';
+      numDiv.textContent=d;
+      el.appendChild(numDiv);
+      if(dayData){
+        const badge=document.createElement('div');
+        badge.className='milk-badge';
+        if(dayData.status==='delivered'){
+          badge.classList.add('delivered');
+          badge.textContent=`${dayData.qty}L ✓`;
+        } else {
+          badge.classList.add('not-delivered');
+          badge.textContent='✗ Skip';
+        }
+        el.appendChild(badge);
+      } else if(!isFuture){
+        const badge=document.createElement('div');
+        badge.className='milk-badge pending';
+        badge.textContent='Tap';
+        el.appendChild(badge);
+      }
+      if(!isFuture) el.onclick=()=>openModal(d);
+      grid.appendChild(el);
+    }
+
+    const stats=getMonthStats();
+    document.getElementById('daysDelivered').textContent=stats.delivered;
+    document.getElementById('daysNotDelivered').textContent=stats.notDelivered;
+    document.getElementById('totalLitres').textContent=stats.totalLitres.toFixed(1);
+    document.getElementById('amountDue').textContent=`₹${stats.amount.toLocaleString('en-IN')}`;
+  }
+
+  function renderBill(){
+    const stats=getMonthStats();
+    const cat=document.getElementById('milkCategory').value;
+    const man=document.getElementById('milkmanName').value||'—';
+    document.getElementById('billMonthLabel').textContent=`${MONTHS[currentMonth]} ${currentYear}`;
+    document.getElementById('billCategory').textContent=cat;
+    document.getElementById('billMilkman').textContent=man;
+    document.getElementById('billPrice').textContent=`₹${getPrice()} / Litre`;
+    document.getElementById('billDays').textContent=`${stats.delivered} days`;
+    document.getElementById('billNotDays').textContent=`${stats.notDelivered} days`;
+    document.getElementById('billLitres').textContent=`${stats.totalLitres.toFixed(1)} Litres`;
+    document.getElementById('billTotal').textContent=`₹${stats.amount.toLocaleString('en-IN')}`;
+  }
+
+  function openModal(d){
+    selectedDay=d;
+    const existing=getDayData(currentYear,currentMonth,d);
+    modalStatus=existing?existing.status:'delivered';
+    const qty=existing?existing.qty:getDefaultQty();
+    const dateStr=new Date(currentYear,currentMonth,d).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    document.getElementById('modalDateLabel').textContent=dateStr;
+    document.getElementById('modalQty').value=qty;
+    document.getElementById('qtyRow').style.display=modalStatus==='delivered'?'block':'none';
+    updateToggleUI();
+    document.getElementById('modalOverlay').classList.remove('hidden');
+  }
+
+  function closeModal(){ document.getElementById('modalOverlay').classList.add('hidden'); selectedDay=null; }
+
+  function setStatus(s){
+    modalStatus=s;
+    document.getElementById('qtyRow').style.display=s==='delivered'?'block':'none';
+    updateToggleUI();
+  }
+
+  function updateToggleUI(){
+    document.getElementById('btnDelivered').className='toggle-btn'+(modalStatus==='delivered'?' active-delivered':'');
+    document.getElementById('btnNotDelivered').className='toggle-btn'+(modalStatus==='not-delivered'?' active-not':'');
+  }
+
+  function saveDay(){
+    if(!selectedDay) return;
+    const qty=modalStatus==='delivered'?(parseFloat(document.getElementById('modalQty').value)||getDefaultQty()):0;
+    setDayData(currentYear,currentMonth,selectedDay,{status:modalStatus,qty});
+    closeModal();
+    renderAll();
+  }
+
+  function printBill(){
+    const stats=getMonthStats();
+    const month=MONTHS[currentMonth];
+    const year=currentYear;
+    const cat=document.getElementById('milkCategory').value;
+    const man=document.getElementById('milkmanName').value||'N/A';
+    const owner=document.getElementById('ownerName').value||'';
+    const price=getPrice();
+    const win=window.open('','_blank');
+    win.document.write(`
+      <html><head><title>Milk Bill - ${month} ${year}</title>
+      <style>
+        body{font-family:Arial,sans-serif;padding:40px;max-width:500px;margin:auto;}
+        h2{color:#2563eb;border-bottom:2px solid #2563eb;padding-bottom:8px;margin-bottom:4px;}
+        .sub{color:#888;font-size:13px;margin-bottom:24px;}
+        .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed #ccc;font-size:15px;}
+        .total{font-size:20px;font-weight:bold;color:#2563eb;border-top:2px solid #2563eb;margin-top:10px;padding-top:14px;display:flex;justify-content:space-between;}
+        .footer{margin-top:30px;font-size:12px;color:#888;text-align:center;}
+      </style></head><body>
+      <h2>🥛 Milk Bill</h2>
+      <div class="sub">${month} ${year}${owner?' — '+owner:''}</div>
+      <div class="row"><span>Milk Category</span><b>${cat}</b></div>
+      <div class="row"><span>Milkman</span><b>${man}</b></div>
+      <div class="row"><span>Price per Litre</span><b>₹${price}</b></div>
+      <div class="row"><span>Days Delivered</span><b>${stats.delivered} days</b></div>
+      <div class="row"><span>Days Not Delivered</span><b>${stats.notDelivered} days</b></div>
+      <div class="row"><span>Total Litres Delivered</span><b>${stats.totalLitres.toFixed(1)} L</b></div>
+      <div class="total"><span>Total Amount to Pay</span><b>₹${stats.amount.toLocaleString('en-IN')}</b></div>
+      <div class="footer">Generated by Milk Tracker App</div>
+      </body></html>
+    `);
+    win.document.close();
+    win.print();
+  }
+
+  document.getElementById('modalOverlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+  loadSettings();
+  renderAll();
+</script>
+</body>
+</html>
